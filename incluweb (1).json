@@ -1,0 +1,828 @@
+{
+  "name": "incluweb",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -20,
+        920
+      ],
+      "id": "87bec406-4f4a-49d6-9b16-815f1f27f763",
+      "name": "When chat message received",
+      "webhookId": "e8cd4f3f-76cc-4c22-943e-f60a7afb9091"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=### # Rol  \nEres un **asistente virtual inteligente** y multifuncional que ayuda a tu usuario a gestionar su día a día con eficiencia y claridad. Tu objetivo es facilitarle la vida resolviendo dudas relacionadas con discapacidad, leyes que tengan que ver con la discapacidad y ayudas de ese estilo.\n\nTodo lo que respondas tiene que ser en base a la base de datos conectada, no tiene que intervenir informacion externa o que no se encuentre en la base de datos.\nsi te solicitan informacion externa, responde con respuestas del tipo: no te puedo proporcionar esta informacion. o no encuentro la informacion.\n\nSOLO caso de que te pregunten algo SOLO de alguna ley o informacion legal sobre la discapacidad puedes ayudarte con informacion externa pero de igual forma verifica en la base de datos la informacion.\n\nTe llamas **JustiBot**, y siempre respondes con tono claro, profesional y directo.\n\nHoy es:  \n**{{ $today }}**\n\nFecha al del inicio del chat:\n**{{ $now }}**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        340,
+        920
+      ],
+      "id": "739e68dc-0497-43f0-9677-e777ed2f3e61",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        260,
+        1200
+      ],
+      "id": "fce54bbb-ded1-4142-8a8f-d50be6841c72",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "W66zIfg1qKKKpBau",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        460,
+        1220
+      ],
+      "id": "dabb8a39-9afd-40b1-b836-4be575f91c0a",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "TjjVbEWRL44O1jqW",
+          "name": "database incluweb account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "documents",
+        "toolDescription": "documentos de información para ayuda del usuario",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.2,
+      "position": [
+        620,
+        1160
+      ],
+      "id": "533f18f6-00da-4547-8f96-b0611e10e0ff",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "1uzT2DRtNrNvdOoS",
+          "name": "Supabase incluweb account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        620,
+        1340
+      ],
+      "id": "2baf9f81-08a3-4433-88b8-91d9a4288000",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "W66zIfg1qKKKpBau",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/folders/1SviDL3-B3x94Ahvk4XDOBsjItVc1RWh3",
+          "mode": "url"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -20,
+        1640
+      ],
+      "id": "ce7412cf-45ae-4f9b-9241-9b4dee7743db",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rhvBD8zHTj1YokOK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ccac3087-4cc4-40da-8576-deb8bf22d99a",
+              "name": "file_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "42677a9c-c073-43ab-bc3c-9fd64de84226",
+              "name": "file_type",
+              "value": "={{ $json.mimeType }}",
+              "type": "string"
+            },
+            {
+              "id": "file-name-assignment",
+              "name": "file_name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "file-extension-assignment",
+              "name": "file_extension",
+              "value": "={{ $json.name.split('.').pop().toLowerCase() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        1640
+      ],
+      "id": "249068ac-68cb-4ac5-8497-4e0755ca1362",
+      "name": "Set File Info"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Set File Info').item.json.file_id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "application/pdf",
+              "slidesToFormat": "application/pdf"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        640,
+        1840
+      ],
+      "id": "c77288fa-9f63-4d7b-9d69-009c83f12d1d",
+      "name": "Download File",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "rhvBD8zHTj1YokOK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-pdf"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-docx"
+                  },
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/msword",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-doc"
+                  },
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/vnd.google-apps.document",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-gdoc"
+                  }
+                ],
+                "combinator": "or"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-xlsx"
+                  },
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/vnd.ms-excel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-xls"
+                  },
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "application/vnd.google-apps.spreadsheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-gsheet"
+                  },
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "text/csv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-csv"
+                  }
+                ],
+                "combinator": "or"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.file_type }}",
+                    "rightValue": "text/plain",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-txt"
+                  },
+                  {
+                    "leftValue": "={{ $json.file_extension }}",
+                    "rightValue": "txt",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-txt-ext"
+                  },
+                  {
+                    "leftValue": "={{ $json.file_extension }}",
+                    "rightValue": "md",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "condition-md"
+                  }
+                ],
+                "combinator": "or"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        780,
+        1580
+      ],
+      "id": "8b3b3c6e-878f-4527-b24c-9c5e21bd8061",
+      "name": "File Type Router"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        1280
+      ],
+      "id": "7e3b77d9-dd71-404c-988b-6a29931e9d50",
+      "name": "Extract PDF Content"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        1440
+      ],
+      "id": "579d155f-3850-4f82-bf87-2640000f0818",
+      "name": "Extract Word Content"
+    },
+    {
+      "parameters": {
+        "options": {
+          "delimiter": "autoDetect"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        1600
+      ],
+      "id": "45bc9d68-d8d3-4ff5-a561-3f6e283a0d44",
+      "name": "Extract CSV Content"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1160,
+        1760
+      ],
+      "id": "ca5c6d68-a545-4cf4-b245-e89a8852850f",
+      "name": "Extract Excel Content"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process text files (TXT, MD)\nconst data = $input.all();\nconst results = [];\n\nfor (const item of data) {\n  try {\n    // Get the binary data\n    const binaryData = item.binary.data;\n    \n    // Convert binary to text\n    let textContent = '';\n    if (binaryData && binaryData.data) {\n      // Decode base64 to text\n      textContent = Buffer.from(binaryData.data, 'base64').toString('utf-8');\n    }\n    \n    results.push({\n      json: {\n        text: textContent,\n        file_id: item.json.file_id,\n        file_name: item.json.file_name,\n        file_type: item.json.file_type,\n        extracted_at: new Date().toISOString()\n      },\n      binary: item.binary\n    });\n  } catch (error) {\n    console.error('Error processing text file:', error);\n    results.push({\n      json: {\n        text: '',\n        error: error.message,\n        file_id: item.json.file_id,\n        file_name: item.json.file_name,\n        file_type: item.json.file_type\n      },\n      binary: item.binary\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1160,
+        1920
+      ],
+      "id": "37540b46-7228-407a-9b05-c2b7413656b2",
+      "name": "Process Text Files"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.text || 'No content extracted' }}",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file_id",
+                "value": "={{ $json.file_id }}"
+              },
+              {
+                "name": "file_name",
+                "value": "={{ $json.file_name }}"
+              },
+              {
+                "name": "file_type",
+                "value": "={{ $json.file_type }}"
+              },
+              {
+                "name": "extracted_at",
+                "value": "={{ $json.extracted_at }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        1900
+      ],
+      "id": "6e38ce73-c5cc-4b1f-a735-f54037ce6b95",
+      "name": "Document Loader"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "mode": "list",
+          "value": "documents",
+          "cachedResultName": "documents"
+        },
+        "options": {
+          "queryName": "match_documents"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        1620
+      ],
+      "id": "a218f740-87bc-4786-a105-90c76fb6ea52",
+      "name": "Store in Vector DB",
+      "retryOnFail": false,
+      "credentials": {
+        "supabaseApi": {
+          "id": "1uzT2DRtNrNvdOoS",
+          "name": "Supabase incluweb account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1940,
+        1900
+      ],
+      "id": "3be2e146-f7d6-4f16-b651-04d249802f95",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "W66zIfg1qKKKpBau",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        420,
+        1640
+      ],
+      "id": "061e8406-932a-4680-b599-646249f2620f",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        2140
+      ],
+      "id": "71f0fdb4-7f56-408e-af4c-a424c16dab53",
+      "name": "Token Splitter1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set File Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set File Info": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download File": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "File Type Router": {
+      "main": [
+        [
+          {
+            "node": "Extract PDF Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract Word Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extract CSV Content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Excel Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Text Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract PDF Content": {
+      "main": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Word Content": {
+      "main": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract CSV Content": {
+      "main": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Excel Content": {
+      "main": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Text Files": {
+      "main": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Store in Vector DB",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "File Type Router",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Document Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f3fd329d-eb9f-4410-9c74-ea674740a011",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "274bcc157ed921ef916b9fb5a6ef2687768ace9799675f56d2dc85555b2f817b"
+  },
+  "id": "OgnAxRaCFYiABYb8",
+  "tags": []
+}
